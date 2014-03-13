@@ -102,7 +102,7 @@ static NSString *JSMultilineLabelNodeGetStringForWord(NSString *word)
     NSArray *wordsInText = [text componentsSeparatedByString:@" "];
     NSUInteger numberOfParsedWords = 0;
     
-    SSKFontType *font = [SSKFontType fontWithName:self.fontName size:self.fontSize];
+    UIFont *font = [UIFont fontWithName:self.fontName size:self.fontSize];
     CGFloat fontLineHeight = JSMultilineLabelNodeGetFontLineHeight(font);
     NSDictionary *textAttributes = @{NSFontAttributeName: font};
     NSCharacterSet *newLineCharacterSet = [NSCharacterSet newlineCharacterSet];
@@ -132,10 +132,15 @@ static NSString *JSMultilineLabelNodeGetStringForWord(NSString *word)
         }
         
         while ([lineText sizeWithAttributes:textAttributes].width > self.maximumWidth) {
-            NSString *lastWord = JSMultilineLabelNodeGetStringForWord([wordsInText objectAtIndex:numberOfParsedWords - 1]);
-            NSRange deleteRange = NSMakeRange([lineText length] - [lastWord length], [lastWord length]);
-            [lineText deleteCharactersInRange:deleteRange];
-            numberOfParsedWords--;
+            if (numberOfParsedWords == 1) {
+                [lineText deleteCharactersInRange:(NSRange){[lineText length] - 1, 1}];
+                [lineText replaceCharactersInRange:(NSRange) {[lineText length] - 3, 3} withString:@"..."];
+            } else {
+                NSString *lastWord = JSMultilineLabelNodeGetStringForWord([wordsInText objectAtIndex:numberOfParsedWords - 1]);
+                NSRange deleteRange = NSMakeRange([lineText length] - [lastWord length], [lastWord length]);
+                [lineText deleteCharactersInRange:deleteRange];
+                numberOfParsedWords--;
+            }
         }
         
         SKLabelNode *lineLabelNode = [SKLabelNode labelNodeWithFontNamed:self.fontName];
